@@ -14,23 +14,45 @@ def is_one_away(sub_x: int, sub_y: int, x: int, y: int) -> bool:
     return delta_x <= 1 and delta_y <= 1
 
 
-def validate_input(x_in: str, y_in: str) -> Tuple[bool, int, int]:
+def is_valid_guess(x: int, y: int) -> bool:
     """
-    Validates the given input.
-    :return: A tuple of which the 1st element describes wether or not the input is valid,
-             and the 2nd and 3rd elements are the inputs as ints
+    Checks if a guess is within bounds
     """
-    if not x_in.isdigit() or not y_in.isdigit():
-        return False, 0, 0
-
-    x, y = int(x_in), int(y_in)
-
     if x > MAX_GUESS or x < MIN_GUESS:
-        return False, 0, 0
+        return False
     if y > MAX_GUESS or y < MIN_GUESS:
-        return False, 0, 0
+        return False
 
-    return True, x, y
+    return True
+
+
+def is_input_int(x_in: str, y_in: str) -> bool:
+    """
+    Checks if the user's input is an integer
+    """
+    try:
+        int(x_in)
+        int(y_in)
+    except ValueError:
+        return False
+    return True
+
+
+def handle_guess(sub_x: int, sub_y: int, x: int, y: int) -> bool:
+    """
+    Prints the correct statement in regards to the provided guess.
+    :return: True if the user guessed the submarine's location
+    """
+    if x == sub_x and y == sub_y:
+        print("Exactly")
+        return True
+    elif is_one_away(sub_x, sub_y, x, y):
+        print("Close")
+    elif x == sub_x or y == sub_y:
+        print("Interesting")
+    else:
+        print("Keep thinking")
+    return False
 
 
 def play_submarine() -> None:
@@ -41,18 +63,17 @@ def play_submarine() -> None:
         tries += 1
         in_y = input("Guess a row: ")
         in_x = input("Guess a column: ")
-        valid, x, y = validate_input(in_x, in_y)
-
-        if not valid:
+        if not is_input_int(in_x, in_y):
+            print("Please enter an integer")
             continue
 
-        if x == sub_x and y == sub_y:
-            print("Exactly")
+        x, y = int(in_x), int(in_y)
+
+        if not is_valid_guess(x, y):
+            print(f"{x}, {y} is not a valid guess")
+            continue
+
+        if handle_guess(sub_x, sub_y, x, y):
             break
-        elif is_one_away(sub_x, sub_y, x, y):
-            print("Close")
-        elif x == sub_x or y == sub_y:
-            print("Interesting")
-        else:
-            print("Keep thinking")
+
     print(f"You guessed the submarine's location in {tries} tries")
